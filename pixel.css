@@ -669,11 +669,14 @@ canvas {
   position: absolute;
   bottom: 16px;
   left: 16px;
+  right: 16px;
   display: none;
+  align-items: flex-end;
+  justify-content: space-between;
 }
 
 @media (max-width: 900px), (pointer: coarse) {
-  .mobile-controls { display: block; }
+  .mobile-controls { display: flex; }
   .server-hint { font-size: 0.45rem; }
 }
 
@@ -707,6 +710,25 @@ canvas {
 .dpad .up { grid-column: 2; }
 .dpad .left { grid-column: 1; grid-row: 2; }
 .dpad .right { grid-column: 3; grid-row: 2; }
+
+.jump-btn {
+  width: 92px;
+  height: 92px;
+  border-radius: 14px;
+  font-family: var(--font);
+  font-size: 0.45rem;
+  background: var(--orange);
+  color: #fff4d8;
+  border: 4px solid var(--orange-d);
+  box-shadow: 4px 4px 0 var(--shadow);
+  touch-action: none;
+  user-select: none;
+}
+
+.jump-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--shadow);
+}
 
 .server-hint {
   position: fixed;
