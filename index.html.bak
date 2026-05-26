@@ -76,17 +76,14 @@
     </div>
 
     <div id="ingameUi">
-      <div class="ingame-topbar">
-        <button class="ingame-top-btn" id="btnIngameMenu">MENU</button>
-        <button class="ingame-top-btn" id="btnIngameChat">CHAT</button>
-      </div>
-      <div class="rotate-hint" id="rotateHint">ROTATE TO LANDSCAPE</div>
+      <button class="ingame-chat-btn" id="btnIngameChat">CHAT</button>
       <div class="ingame-chat-panel" id="ingameChatPanel">
         <input type="text" id="ingameChatInput" placeholder="Message..." maxlength="80" />
         <button class="btn btn-primary btn-small" id="ingameChatSend">GO</button>
       </div>
       <div class="mobile-controls">
         <div class="dpad">
+          <button class="up" data-key="up">▲</button>
           <button class="left" data-key="left">◀</button>
           <button class="right" data-key="right">▶</button>
         </div>
@@ -264,7 +261,7 @@
       });
     }
 
-    document.querySelectorAll(".btn, .create-bar, .back-link, .room-item, .ingame-top-btn").forEach(sfxButton);
+    document.querySelectorAll(".btn, .create-bar, .back-link, .room-item").forEach(sfxButton);
 
     const menuStack = document.getElementById("menuStack");
     const subBtns = document.getElementById("subBtns");
@@ -502,9 +499,6 @@
 
     const gravity = PHYS.gravity;
 
-    const isCoarse = window.matchMedia?.("(pointer: coarse)").matches ?? false;
-    const TEXT_SCALE = isCoarse ? 1.65 : 1.25;
-
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
     function prand(n) {
@@ -543,8 +537,8 @@
       );
     }
 
-    function resolvePlatformCollision(entity, prevBottom, resetGrounded = true) {
-      if (resetGrounded) entity.grounded = false;
+    function resolvePlatformCollision(entity, prevBottom) {
+      entity.grounded = false;
       const hb = getHitbox(entity);
 
       for (const platform of platforms) {
@@ -588,7 +582,7 @@
     walkSprite.onload = () => walkLoaded = true;
     jumpSprite.onload = () => jumpLoaded = true;
 
-    const keys = { left: false, right: false, jumpQueued: false };
+    const keys = { left: false, right: false, jump: false };
 
     const world = { width: 3200, height: 1400 };
     const camera = { x: 0, y: 0 };
@@ -675,30 +669,14 @@
       chatBubbles.set(key, { text, until: performance.now() + 4500 });
     }
 
-    function updateRotateHint() {
-      const el = document.getElementById("rotateHint");
-      if (!el) return;
-      const portrait = window.matchMedia?.("(orientation: portrait)").matches ?? (window.innerHeight > window.innerWidth);
-      el.classList.toggle("show", isCoarse && gameRunning && portrait);
-    }
-
-    async function tryLockLandscape() {
-      if (!isCoarse) return;
-      const o = screen?.orientation;
-      if (!o?.lock) return;
-      try { await o.lock("landscape"); } catch { /* ignore */ }
-    }
-
     function resizeCanvas() {
       const maxW = window.innerWidth - 8;
       const maxH = window.innerHeight - 8;
       const scale = Math.min(maxW / 1280, maxH / 720, 1);
       canvas.style.width = `${1280 * scale}px`;
       canvas.style.height = `${720 * scale}px`;
-      updateRotateHint();
     }
     window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("orientationchange", resizeCanvas);
     resizeCanvas();
 
     function drawEntitySprite(entity, isLocal) {
@@ -730,11 +708,10 @@
       }
       ctx.restore();
 
-      const nameSize = Math.round(10 * TEXT_SCALE);
-      ctx.font = `${nameSize}px monospace`;
+      ctx.font = "8px monospace";
       ctx.textAlign = "center";
       const nx = entity.x - camera.x + PHYS.drawW / 2;
-      const ny = entity.y - camera.y - Math.round(10 * TEXT_SCALE);
+      const ny = entity.y - camera.y - 8;
       ctx.fillStyle = "#0a0608";
       ctx.fillText(entity.username || "Player", nx + 2, ny + 2);
       ctx.fillStyle = "#ffe566";
@@ -744,16 +721,15 @@
       const bubble = chatBubbles.get(bid);
       if (bubble && performance.now() < bubble.until) {
         const bx = entity.x - camera.x + PHYS.drawW / 2;
-        const by = entity.y - camera.y - Math.round(34 * TEXT_SCALE);
-        const bubbleSize = Math.round(10 * TEXT_SCALE);
-        ctx.font = `${bubbleSize}px monospace`;
+        const by = entity.y - camera.y - 26;
+        ctx.font = "8px monospace";
         const tw = ctx.measureText(bubble.text).width;
-        const bw = tw + Math.round(14 * TEXT_SCALE);
+        const bw = tw + 12;
         ctx.fillStyle = "#f5e6d0";
-        ctx.fillRect(bx - bw / 2, by - Math.round(14 * TEXT_SCALE), bw, Math.round(18 * TEXT_SCALE));
+        ctx.fillRect(bx - bw / 2, by - 12, bw, 14);
         ctx.strokeStyle = "#0a0608";
         ctx.lineWidth = 2;
-        ctx.strokeRect(bx - bw / 2, by - Math.round(14 * TEXT_SCALE), bw, Math.round(18 * TEXT_SCALE));
+        ctx.strokeRect(bx - bw / 2, by - 12, bw, 14);
         ctx.fillStyle = "#1a1208";
         ctx.fillText(bubble.text, bx, by);
       } else if (bubble) chatBubbles.delete(bid);
@@ -827,7 +803,7 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(x, y, w, h);
 
-      ctx.font = `${Math.round(12 * TEXT_SCALE)}px monospace`;
+      ctx.font = "10px monospace";
       ctx.fillStyle = "#ffe566";
       ctx.textAlign = "left";
       ctx.fillText(`SCORE ${score}`, x, y + h + 18);
@@ -839,22 +815,21 @@
       else if (keys.right) { localPlayer.velX = localPlayer.speed; localPlayer.facing = 1; }
       else localPlayer.velX *= 0.8;
 
+      if (keys.jump && localPlayer.grounded) {
+        localPlayer.velY = localPlayer.jumpPower;
+        localPlayer.grounded = false;
+        keys.jump = false;
+      }
+
       const prevBottom = getHitbox(localPlayer).bottom;
 
       localPlayer.velY += gravity;
       localPlayer.y += localPlayer.velY;
-      resolvePlatformCollision(localPlayer, prevBottom, true);
-
-      if (keys.jumpQueued && localPlayer.grounded) {
-        localPlayer.velY = localPlayer.jumpPower;
-        localPlayer.grounded = false;
-        keys.jumpQueued = false;
-      }
+      resolvePlatformCollision(localPlayer, prevBottom);
 
       const prevBottom2 = getHitbox(localPlayer).bottom;
       localPlayer.x += localPlayer.velX;
-      // Horizontal pass should not erase grounded state.
-      resolvePlatformCollision(localPlayer, prevBottom2, false);
+      resolvePlatformCollision(localPlayer, prevBottom2);
 
       if (localPlayer.x < 0) localPlayer.x = 0;
       if (localPlayer.x + localPlayer.width > world.width) localPlayer.x = world.width - localPlayer.width;
@@ -884,8 +859,7 @@
       else {
         animation.timer++;
         if (animation.timer >= animation.speed) {
-          if (localPlayer.grounded) animation.frame = (animation.frame + 1) % 2;
-          else animation.frame = (animation.frame + 1) % 4;
+          animation.frame = (animation.frame + 1) % (localPlayer.grounded ? 2 : 4);
           animation.timer = 0;
         }
       }
@@ -1020,8 +994,6 @@
       gameRunning = true;
       resetLevel();
       showScreen("game");
-      tryLockLandscape();
-      updateRotateHint();
       if (socket) localPlayer.id = socket.id;
       if (rafId) cancelAnimationFrame(rafId);
       gameLoop();
@@ -1032,7 +1004,7 @@
       if (!gameRunning) return;
       if (e.key === "a" || e.key === "ArrowLeft") keys.left = true;
       if (e.key === "d" || e.key === "ArrowRight") keys.right = true;
-      if (!isCoarse && (e.key === "w" || e.key === "ArrowUp" || e.key === " ")) keys.jumpQueued = true;
+      if (e.key === "w" || e.key === "ArrowUp" || e.key === " ") keys.jump = true;
     });
     document.addEventListener("keyup", e => {
       if (e.key === "a" || e.key === "ArrowLeft") keys.left = false;
@@ -1041,7 +1013,7 @@
 
     document.querySelectorAll(".dpad button").forEach(btn => {
       const key = btn.dataset.key;
-      const down = e => { e.preventDefault(); if (key === "left") keys.left = true; if (key === "right") keys.right = true; };
+      const down = e => { e.preventDefault(); if (key === "left") keys.left = true; if (key === "right") keys.right = true; if (key === "up") keys.jump = true; };
       const up = e => { e.preventDefault(); if (key === "left") keys.left = false; if (key === "right") keys.right = false; };
       btn.addEventListener("pointerdown", down);
       btn.addEventListener("pointerup", up);
@@ -1050,19 +1022,6 @@
 
     document.getElementById("btnIngameChat").addEventListener("click", () => {
       document.getElementById("ingameChatPanel").classList.toggle("open");
-    });
-
-    document.getElementById("btnIngameMenu").addEventListener("click", () => {
-      document.getElementById("ingameChatPanel").classList.remove("open");
-      if (socket) socket.emit("leaveRoom");
-      currentRoomId = null;
-      remotePlayers.clear();
-      chatBubbles.clear();
-      keys.left = keys.right = false;
-      keys.jumpQueued = false;
-      gameRunning = false;
-      showScreen("main");
-      updateRotateHint();
     });
 
     function sendGameChat() {
