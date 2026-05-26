@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>KITO CLUB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="pixel.css" />
+  <script src="config.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- MAIN MENU -->
+    <section id="screenMain" class="screen active">
+      <div class="title-wrap">
+        <div class="title-line">
+          <span class="kito">KITO</span>
+          <span class="club">CLUB</span>
+        </div>
+        <p class="title-sub">VOLCANIC PIXEL MAYHEM</p>
+      </div>
+
+      <div class="menu-stack" id="menuStack">
+        <button class="btn btn-primary" id="btnPlay">PLAY</button>
+        <div class="sub-btns" id="subBtns">
+          <button class="btn btn-secondary" id="btnPvP">PvP</button>
+          <button class="btn btn-secondary" id="btnPvE">PvE</button>
+        </div>
+        <button class="btn btn-ghost" id="btnSettings">SETTINGS</button>
+      </div>
+    </section>
+
+    <!-- PvE ROOMS -->
+    <section id="screenRooms" class="screen rooms-screen">
+      <div class="rooms-header">
+        <h2>PvE ROOMS</h2>
+      </div>
+      <div class="rooms-body">
+        <button class="create-bar" id="btnCreateRoom">CREATE ROOM</button>
+        <div class="room-list" id="roomList">
+          <div class="room-item" style="cursor:default;color:var(--muted)">Loading rooms...</div>
+        </div>
+        <button class="back-link pixel-link" id="btnRoomsBack">&lt; BACK</button>
+      </div>
+    </section>
+
+    <!-- LOBBY -->
+    <section id="screenLobby" class="screen rooms-screen">
+      <div class="rooms-header"><h2 id="lobbyRoomName">ROOM</h2></div>
+      <div class="lobby-grid">
+        <div class="panel">
+          <h3>Players</h3>
+          <ul class="player-list" id="lobbyPlayers"></ul>
+        </div>
+        <div class="panel">
+          <h3>Chat</h3>
+          <div class="chat-log" id="lobbyChat"></div>
+          <div class="chat-input-row">
+            <input type="text" id="lobbyChatInput" placeholder="Say something..." maxlength="120" />
+            <button class="btn btn-primary btn-small" id="lobbyChatSend">SEND</button>
+          </div>
+          <div class="lobby-right-bottom">
+            <div class="powers-soon">⚡ Powers coming soon</div>
+            <button class="btn btn-primary start-btn" id="btnStartGame">START</button>
+          </div>
+        </div>
+      </div>
+      <button class="back-link pixel-link" id="btnLobbyLeave">&lt; LEAVE</button>
+    </section>
+
+    <!-- GAME -->
+    <div id="gameWrap">
+      <canvas id="game" width="1280" height="720"></canvas>
+    </div>
+
+    <div id="ingameUi">
+      <button class="ingame-chat-btn" id="btnIngameChat">CHAT</button>
+      <div class="ingame-chat-panel" id="ingameChatPanel">
+        <input type="text" id="ingameChatInput" placeholder="Message..." maxlength="80" />
+        <button class="btn btn-primary btn-small" id="ingameChatSend">GO</button>
+      </div>
+      <div class="mobile-controls">
+        <div class="dpad">
+          <button class="up" data-key="up">▲</button>
+          <button class="left" data-key="left">◀</button>
+          <button class="right" data-key="right">▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-backdrop" id="modalPvP">
+      <div class="modal">
+        <span class="emoji">😭</span>
+        <h2>Coming Soon!</h2>
+        <p>pvp mode still in devlopment - LORD KITO</p>
+        <button class="btn btn-primary" data-close="modalPvP">OK!</button>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="modalCreateRoom">
+      <div class="modal settings-panel">
+        <h2>Create Room</h2>
+        <div class="form-row">
+          <label>Room name</label>
+          <input type="text" id="inputRoomName" placeholder="My Volcano Run" maxlength="24" />
+        </div>
+        <div class="form-row">
+          <label>Player count</label>
+          <div class="count-row">
+            <button type="button" id="countMinus">−</button>
+            <span id="countDisplay" style="min-width:2rem;text-align:center;font-weight:800">4</span>
+            <button type="button" id="countPlus">+</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnConfirmCreate" style="margin-top:8px">Create</button>
+        <button class="back-link pixel-link" data-close="modalCreateRoom" style="display:block;margin:16px auto 0">CANCEL</button>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="modalSettings">
+      <div class="modal settings-panel">
+        <h2>Settings</h2>
+        <div class="field">
+          <label>Master volume</label>
+          <input type="range" id="volumeSlider" min="0" max="100" value="70" />
+        </div>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="usernameInput" placeholder="Player" maxlength="16" />
+        </div>
+        <div class="field">
+          <label>Server URL (Netlify)</label>
+          <input type="text" id="serverUrlInput" placeholder="https://kito-club.onrender.com" />
+          <p class="field-hint">Leave empty on Render. Only if UI and server use different URLs.</p>
+        </div>
+        <button class="btn btn-primary" data-close="modalSettings">SAVE</button>
+      </div>
+    </div>
+
+    <p class="server-hint" id="serverHint"></p>
+  </div>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" crossorigin="anonymous"></script>
+  <script>
+    // ==================== SETTINGS & AUDIO ====================
+    const settings = {
+      username: localStorage.getItem("kito_username") || "Player",
+      volume: Number(localStorage.getItem("kito_volume") ?? 70)
+    };
+
+    let audioCtx;
+    let masterGain;
+    let musicNodes = null;
+
+    function initAudio() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = settings.volume / 100;
+      masterGain.connect(audioCtx.destination);
+    }
+
+    function setVolume(v) {
+      settings.volume = v;
+      localStorage.setItem("kito_volume", v);
+      if (masterGain) masterGain.gain.value = v / 100;
+    }
+
+    function playClick() {
+      initAudio();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "square";
+      o.frequency.value = 520;
+      g.gain.setValueAtTime(0.08 * (settings.volume / 100), audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+      o.connect(g);
+      g.connect(masterGain);
+      o.start();
+      o.stop(audioCtx.currentTime + 0.08);
+    }
+
+    function startMenuMusic() {
+      initAudio();
+      stopMenuMusic();
+      if (settings.volume <= 0) return;
+
+      const bass = audioCtx.createOscillator();
+      const lead = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      g.gain.value = 0.04 * (settings.volume / 100);
+
+      bass.type = "triangle";
+      lead.type = "sine";
+      bass.frequency.value = 55;
+      lead.frequency.value = 110;
+
+      const lfo = audioCtx.createOscillator();
+      const lfoG = audioCtx.createGain();
+      lfo.frequency.value = 0.2;
+      lfoG.gain.value = 8;
+      lfo.connect(lfoG);
+      lfoG.connect(lead.frequency);
+
+      bass.connect(g);
+      lead.connect(g);
+      g.connect(masterGain);
+      bass.start();
+      lead.start();
+      lfo.start();
+
+      musicNodes = { bass, lead, lfo, g };
+    }
+
+    function stopMenuMusic() {
+      if (!musicNodes) return;
+      try {
+        musicNodes.bass.stop();
+        musicNodes.lead.stop();
+        musicNodes.lfo.stop();
+      } catch (_) {}
+      musicNodes = null;
+    }
+
+    // ==================== UI NAV ====================
+    const screens = {
+      main: document.getElementById("screenMain"),
+      rooms: document.getElementById("screenRooms"),
+      lobby: document.getElementById("screenLobby")
+    };
+
+    let currentRoomId = null;
+    let isHost = false;
+    let roomPlayerCount = 4;
+    let gameRunning = false;
+
+    function showScreen(name) {
+      Object.values(screens).forEach(s => s.classList.remove("active"));
+      document.getElementById("gameWrap").classList.remove("active");
+      document.getElementById("ingameUi").classList.remove("active");
+
+      if (name === "game") {
+        document.getElementById("gameWrap").classList.add("active");
+        document.getElementById("ingameUi").classList.add("active");
+        stopMenuMusic();
+        return;
+      }
+      if (screens[name]) screens[name].classList.add("active");
+      if (name === "main") startMenuMusic();
+      else stopMenuMusic();
+    }
+
+    function sfxButton(el) {
+      el.addEventListener("click", () => {
+        playClick();
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+      });
+    }
+
+    document.querySelectorAll(".btn, .create-bar, .back-link, .room-item").forEach(sfxButton);
+
+    const menuStack = document.getElementById("menuStack");
+    const subBtns = document.getElementById("subBtns");
+
+    document.getElementById("btnPlay").addEventListener("click", () => {
+      subBtns.classList.add("show");
+      menuStack.classList.add("expanded");
+    });
+
+    document.getElementById("btnPvP").addEventListener("click", () => {
+      document.getElementById("modalPvP").classList.add("show");
+    });
+
+    document.getElementById("btnPvE").addEventListener("click", () => {
+      showScreen("rooms");
+      if (socket) socket.emit("requestRooms");
+    });
+
+    document.getElementById("btnSettings").addEventListener("click", () => {
+      document.getElementById("volumeSlider").value = settings.volume;
+      document.getElementById("usernameInput").value = settings.username;
+      document.getElementById("serverUrlInput").value =
+        localStorage.getItem("kito_server_url") || window.KITO_SERVER_URL || "";
+      document.getElementById("modalSettings").classList.add("show");
+    });
+
+    document.querySelectorAll("[data-close]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.close;
+        document.getElementById(id).classList.remove("show");
+        if (id === "modalSettings") saveSettingsFromModal();
+      });
+    });
+
+    function getServerUrl() {
+      const fromStorage = localStorage.getItem("kito_server_url");
+      const fromConfig = (window.KITO_SERVER_URL || "").trim();
+      const fromInput = (document.getElementById("serverUrlInput")?.value || "").trim();
+      return fromInput || fromStorage || fromConfig || "";
+    }
+
+    function saveSettingsFromModal() {
+      settings.username = document.getElementById("usernameInput").value.trim().slice(0, 16) || "Player";
+      localStorage.setItem("kito_username", settings.username);
+      setVolume(Number(document.getElementById("volumeSlider").value));
+      const url = document.getElementById("serverUrlInput").value.trim();
+      localStorage.setItem("kito_server_url", url);
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+      }
+      connectSocket();
+      updateServerHint();
+    }
+
+    document.getElementById("volumeSlider").addEventListener("input", e => setVolume(Number(e.target.value)));
+    document.getElementById("usernameInput").addEventListener("change", e => {
+      settings.username = e.target.value.trim().slice(0, 16) || "Player";
+      localStorage.setItem("kito_username", settings.username);
+    });
+
+    document.getElementById("btnRoomsBack").addEventListener("click", () => showScreen("main"));
+
+    // Create room modal
+    document.getElementById("btnCreateRoom").addEventListener("click", () => {
+      document.getElementById("modalCreateRoom").classList.add("show");
+    });
+
+    document.getElementById("countMinus").addEventListener("click", () => {
+      roomPlayerCount = Math.max(2, roomPlayerCount - 1);
+      document.getElementById("countDisplay").textContent = roomPlayerCount;
+    });
+    document.getElementById("countPlus").addEventListener("click", () => {
+      roomPlayerCount = Math.min(8, roomPlayerCount + 1);
+      document.getElementById("countDisplay").textContent = roomPlayerCount;
+    });
+
+    document.getElementById("btnConfirmCreate").addEventListener("click", () => {
+      const name = document.getElementById("inputRoomName").value.trim() || "Volcano Room";
+      document.getElementById("modalCreateRoom").classList.remove("show");
+      if (!socket || !socket.connected) {
+        alert("Cannot reach game server. Check your connection or try again in a moment.");
+        return;
+      }
+      socket.emit("createRoom", {
+        name,
+        maxPlayers: roomPlayerCount,
+        username: settings.username
+      });
+    });
+
+    // ==================== SOCKET ====================
+    let socket = null;
+
+    function connectSocket() {
+      if (typeof io === "undefined") {
+        console.warn("Socket.io client not loaded");
+        updateServerHint();
+        return;
+      }
+
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+        socket = null;
+      }
+
+      const serverUrl = getServerUrl();
+      const opts = { transports: ["websocket", "polling"] };
+
+      try {
+        socket = serverUrl ? io(serverUrl, opts) : io(opts);
+      } catch (e) {
+        console.warn("Socket connect failed", e);
+        updateServerHint();
+        return;
+      }
+
+      socket.on("connect", () => {
+        socket.emit("requestRooms");
+        updateServerHint();
+      });
+      socket.on("connect_error", () => updateServerHint());
+      socket.on("disconnect", () => updateServerHint());
+      socket.on("roomList", renderRoomList);
+      socket.on("joinedRoom", onJoinedRoom);
+      socket.on("joinError", msg => alert(msg));
+      socket.on("lobbyUpdate", updateLobby);
+      socket.on("lobbyChat", appendLobbyChat);
+      socket.on("gameStart", () => startMultiplayerGame());
+      socket.on("playerState", state => {
+        remotePlayers.set(state.id, { ...state, lastUpdate: performance.now() });
+      });
+      socket.on("gameChat", msg => {
+        const p = remotePlayers.get(msg.id) || localPlayer;
+        if (msg.id === socket.id) addChatBubble(localPlayer, msg.text);
+        else if (remotePlayers.has(msg.id)) addChatBubble(remotePlayers.get(msg.id), msg.text);
+      });
+    }
+
+    function renderRoomList(list) {
+      const el = document.getElementById("roomList");
+      if (!list || list.length === 0) {
+        el.innerHTML = '<div class="room-item" style="cursor:default;color:var(--muted)">No rooms yet — create one!</div>';
+        return;
+      }
+      el.innerHTML = list
+        .filter(r => !r.inGame)
+        .map(r => `
+          <div class="room-item" data-id="${r.id}">
+            <strong>${escapeHtml(r.name)}</strong>
+            <span class="players">${r.players}/${r.maxPlayers}</span>
+          </div>
+        `).join("");
+
+      el.querySelectorAll(".room-item[data-id]").forEach(item => {
+        item.addEventListener("click", () => {
+          playClick();
+          socket.emit("joinRoom", { roomId: item.dataset.id, username: settings.username });
+        });
+      });
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+    }
+
+    function onJoinedRoom(data) {
+      currentRoomId = data.roomId;
+      isHost = data.isHost;
+      document.getElementById("lobbyRoomName").textContent = "ROOM";
+      updateLobby(data);
+      showScreen("lobby");
+    }
+
+    function updateLobby(data) {
+      const list = document.getElementById("lobbyPlayers");
+      list.innerHTML = data.players.map(p =>
+        `<li class="${p.id === data.hostId ? "host" : ""}">${escapeHtml(p.username)}${p.id === data.hostId ? " ★" : ""}</li>`
+      ).join("");
+
+      document.getElementById("lobbyChat").innerHTML = (data.chat || []).map(m =>
+        `<div class="msg"><span class="name">${escapeHtml(m.username)}:</span> ${escapeHtml(m.text)}</div>`
+      ).join("");
+
+      const startBtn = document.getElementById("btnStartGame");
+      if (data.hostId === socket?.id) startBtn.classList.add("visible");
+      else startBtn.classList.remove("visible");
+    }
+
+    function appendLobbyChat(msg) {
+      const log = document.getElementById("lobbyChat");
+      log.innerHTML += `<div class="msg"><span class="name">${escapeHtml(msg.username)}:</span> ${escapeHtml(msg.text)}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    document.getElementById("lobbyChatSend").addEventListener("click", sendLobbyChat);
+    document.getElementById("lobbyChatInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendLobbyChat();
+    });
+
+    function sendLobbyChat() {
+      const input = document.getElementById("lobbyChatInput");
+      const text = input.value.trim();
+      if (!text || !socket) return;
+      socket.emit("lobbyChat", text);
+      input.value = "";
+    }
+
+    document.getElementById("btnStartGame").addEventListener("click", () => {
+      if (socket && isHost) socket.emit("startGame");
+    });
+
+    document.getElementById("btnLobbyLeave").addEventListener("click", () => {
+      if (socket) socket.emit("leaveRoom");
+      currentRoomId = null;
+      showScreen("main");
+    });
+
+    // ==================== GAME ENGINE ====================
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const PHYS = {
+      gravity: 0.6,
+      hitW: 34,
+      hitH: 46,
+      hitOffsetX: 15,
+      hitOffsetY: 18,
+      drawW: 64,
+      drawH: 64,
+      feetMargin: 6
+    };
+
+    const gravity = PHYS.gravity;
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function prand(n) {
+      const x = Math.sin(n * 999.123) * 43758.5453;
+      return x - Math.floor(x);
+    }
+
+    function roundedRectPath(x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function getHitbox(e) {
+      return {
+        x: e.x + PHYS.hitOffsetX,
+        y: e.y + PHYS.hitOffsetY,
+        width: PHYS.hitW,
+        height: PHYS.hitH,
+        bottom: e.y + PHYS.hitOffsetY + PHYS.hitH,
+        cx: e.x + PHYS.hitOffsetX + PHYS.hitW / 2
+      };
+    }
+
+    function hitboxOverlaps(hb, platform) {
+      return (
+        hb.x < platform.x + platform.width &&
+        hb.x + hb.width > platform.x &&
+        hb.y < platform.y + platform.height &&
+        hb.y + hb.height > platform.y
+      );
+    }
+
+    function resolvePlatformCollision(entity, prevBottom) {
+      entity.grounded = false;
+      const hb = getHitbox(entity);
+
+      for (const platform of platforms) {
+        if (!hitboxOverlaps(hb, platform)) continue;
+
+        const overlapTop = hb.y + hb.height - platform.y;
+        const overlapBottom = platform.y + platform.height - hb.y;
+        const overlapLeft = hb.x + hb.width - platform.x;
+        const overlapRight = platform.x + platform.width - hb.x;
+
+        const feetOnPlatform =
+          hb.cx > platform.x + PHYS.feetMargin &&
+          hb.cx < platform.x + platform.width - PHYS.feetMargin;
+
+        const landingFromAbove =
+          entity.velY >= 0 &&
+          prevBottom <= platform.y + 14 &&
+          overlapTop <= overlapLeft &&
+          overlapTop <= overlapBottom &&
+          feetOnPlatform;
+
+        if (landingFromAbove) {
+          entity.y = platform.y - PHYS.hitOffsetY - PHYS.hitH;
+          entity.velY = 0;
+          entity.grounded = true;
+          return;
+        }
+
+        if (entity.velY < 0 && overlapBottom < overlapTop && overlapBottom < overlapLeft && overlapBottom < overlapRight) {
+          entity.y = platform.y + platform.height - PHYS.hitOffsetY;
+          entity.velY = 0;
+        }
+      }
+    }
+
+    const walkSprite = new Image();
+    walkSprite.src = "walk.png";
+    const jumpSprite = new Image();
+    jumpSprite.src = "jump.png";
+    let walkLoaded = false, jumpLoaded = false;
+    walkSprite.onload = () => walkLoaded = true;
+    jumpSprite.onload = () => jumpLoaded = true;
+
+    const keys = { left: false, right: false, jump: false };
+
+    const world = { width: 3200, height: 1400 };
+    const camera = { x: 0, y: 0 };
+
+    const platforms = [
+      { x: 0, y: 650, width: world.width, height: 70 },
+      { x: 220, y: 560, width: 180, height: 22 },
+      { x: 520, y: 500, width: 180, height: 22 },
+      { x: 820, y: 440, width: 180, height: 22 },
+      { x: 1120, y: 380, width: 180, height: 22 },
+      { x: 1500, y: 520, width: 220, height: 22 },
+      { x: 1820, y: 450, width: 160, height: 22 },
+      { x: 2050, y: 380, width: 200, height: 22 },
+      { x: 2320, y: 320, width: 170, height: 22 },
+      { x: 2600, y: 520, width: 220, height: 22 },
+      { x: 2880, y: 450, width: 190, height: 22 }
+    ];
+
+    const coins = [
+      { x: 300, y: 520, collected: false },
+      { x: 600, y: 460, collected: false },
+      { x: 900, y: 400, collected: false },
+      { x: 1200, y: 340, collected: false },
+      { x: 1580, y: 480, collected: false },
+      { x: 1900, y: 410, collected: false },
+      { x: 2150, y: 340, collected: false },
+      { x: 2400, y: 280, collected: false },
+      { x: 2700, y: 480, collected: false },
+      { x: 2960, y: 410, collected: false }
+    ];
+
+    let score = 0;
+    const enemyConfig = { max: 5, aggroRange: 260, disengageRange: 380, speed: 4.25, wanderSpeed: 2.25, hitDamage: 10 };
+    const enemies = [];
+    const remotePlayers = new Map();
+    const chatBubbles = new Map();
+
+    const localPlayer = {
+      x: 100, y: 100,
+      width: 48, height: 48,
+      velX: 0, velY: 0,
+      speed: 5, jumpPower: -13,
+      grounded: false, facing: 1,
+      health: 100, maxHealth: 100,
+      invuln: 0,
+      username: settings.username,
+      id: null
+    };
+
+    const animation = { frame: 0, timer: 0, speed: 10, state: "walk" };
+    let syncTimer = 0;
+    let rafId = null;
+
+    function spawnEnemies() {
+      enemies.length = 0;
+      const candidates = platforms.filter(p => p.width >= 150 && p.y < 630);
+      for (let i = 0; i < enemyConfig.max; i++) {
+        const p = candidates[Math.floor(prand(i + 10) * candidates.length)] || platforms[0];
+        const pad = 20;
+        const x = p.x + pad + prand(i + 200) * Math.max(1, p.width - pad * 2 - 36);
+        enemies.push({
+          x, y: p.y - 40, width: 36, height: 36,
+          velX: 0, velY: 0, grounded: false,
+          facing: prand(i + 55) > 0.5 ? 1 : -1,
+          aggro: false, wanderDir: prand(i + 77) > 0.5 ? 1 : -1,
+          wanderTimer: 30 + Math.floor(prand(i + 99) * 90)
+        });
+      }
+    }
+
+    function resetLevel() {
+      score = 0;
+      coins.forEach(c => c.collected = false);
+      spawnEnemies();
+      localPlayer.x = 100;
+      localPlayer.y = 100;
+      localPlayer.velX = localPlayer.velY = 0;
+      localPlayer.health = localPlayer.maxHealth;
+      camera.x = 0;
+    }
+
+    function addChatBubble(entity, text) {
+      const key = entity.id || "local";
+      chatBubbles.set(key, { text, until: performance.now() + 4500 });
+    }
+
+    function resizeCanvas() {
+      const maxW = window.innerWidth - 8;
+      const maxH = window.innerHeight - 8;
+      const scale = Math.min(maxW / 1280, maxH / 720, 1);
+      canvas.style.width = `${1280 * scale}px`;
+      canvas.style.height = `${720 * scale}px`;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function drawEntitySprite(entity, isLocal) {
+      const anim = isLocal ? animation : (entity.anim || { frame: 0, state: "walk" });
+      const grounded = entity.grounded;
+      let sprite = grounded ? walkSprite : jumpSprite;
+      let frames = grounded ? 2 : 4;
+      let loaded = grounded ? walkLoaded : jumpLoaded;
+
+      if (!loaded || !sprite.complete) {
+        ctx.fillStyle = isLocal ? "#ff6b6b" : "#6bcbff";
+        ctx.fillRect(entity.x - camera.x, entity.y - camera.y, PHYS.drawW, PHYS.drawH);
+        return;
+      }
+
+      const fw = sprite.width / frames;
+      const fh = sprite.height;
+      const dx = entity.x - camera.x;
+      const dy = entity.y - camera.y;
+      const frame = anim.frame || 0;
+
+      ctx.save();
+      if (entity.facing === -1) {
+        ctx.translate(dx + PHYS.drawW, dy);
+        ctx.scale(-1, 1);
+        ctx.drawImage(sprite, frame * fw, 0, fw, fh, 0, 0, PHYS.drawW, PHYS.drawH);
+      } else {
+        ctx.drawImage(sprite, frame * fw, 0, fw, fh, dx, dy, PHYS.drawW, PHYS.drawH);
+      }
+      ctx.restore();
+
+      ctx.font = "8px monospace";
+      ctx.textAlign = "center";
+      const nx = entity.x - camera.x + PHYS.drawW / 2;
+      const ny = entity.y - camera.y - 8;
+      ctx.fillStyle = "#0a0608";
+      ctx.fillText(entity.username || "Player", nx + 2, ny + 2);
+      ctx.fillStyle = "#ffe566";
+      ctx.fillText(entity.username || "Player", nx, ny);
+
+      const bid = entity.id || "local";
+      const bubble = chatBubbles.get(bid);
+      if (bubble && performance.now() < bubble.until) {
+        const bx = entity.x - camera.x + PHYS.drawW / 2;
+        const by = entity.y - camera.y - 26;
+        ctx.font = "8px monospace";
+        const tw = ctx.measureText(bubble.text).width;
+        const bw = tw + 12;
+        ctx.fillStyle = "#f5e6d0";
+        ctx.fillRect(bx - bw / 2, by - 12, bw, 14);
+        ctx.strokeStyle = "#0a0608";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(bx - bw / 2, by - 12, bw, 14);
+        ctx.fillStyle = "#1a1208";
+        ctx.fillText(bubble.text, bx, by);
+      } else if (bubble) chatBubbles.delete(bid);
+    }
+
+    function drawBackground() {
+      const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      g.addColorStop(0, "#14070d");
+      g.addColorStop(0.45, "#2a0b11");
+      g.addColorStop(1, "#09050b");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#05030a";
+      ctx.beginPath();
+      ctx.moveTo(0, 430);
+      for (let x = 0; x <= canvas.width + 40; x += 80) {
+        const h = 390 + prand(x * 0.01 + 3) * 90;
+        ctx.lineTo(x + 40, h);
+        ctx.lineTo(x + 80, 430);
+      }
+      ctx.lineTo(canvas.width, 500);
+      ctx.lineTo(0, 500);
+      ctx.closePath();
+      ctx.fill();
+
+      const lg = ctx.createLinearGradient(0, canvas.height - 180, 0, canvas.height);
+      lg.addColorStop(0, "rgba(255, 85, 0, 0)");
+      lg.addColorStop(1, "rgba(255, 85, 0, 0.25)");
+      ctx.fillStyle = lg;
+      ctx.fillRect(0, canvas.height - 220, canvas.width, 220);
+
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      for (let i = 0; i < 70; i++) {
+        ctx.fillRect((i * 97 + performance.now() * 0.02) % canvas.width, (i * 41 + performance.now() * 0.01) % canvas.height, 2, 2);
+      }
+    }
+
+    function drawPlatform(platform) {
+      const sx = platform.x - camera.x;
+      const sy = platform.y - camera.y;
+      ctx.fillStyle = "#4b2417";
+      ctx.fillRect(sx, sy, platform.width, platform.height);
+      ctx.fillStyle = "#6a3522";
+      ctx.fillRect(sx, sy, platform.width, Math.max(4, Math.floor(platform.height * 0.22)));
+      const cracks = Math.floor(platform.width / 55);
+      for (let i = 0; i < cracks; i++) {
+        const seed = platform.x * 0.001 + platform.y * 0.01 + i * 13.37;
+        const cx = sx + 10 + prand(seed + 1) * (platform.width - 20);
+        const cy = sy + 6 + prand(seed + 2) * (platform.height - 12);
+        const len = 10 + prand(seed + 3) * 26;
+        ctx.fillStyle = "rgba(255, 86, 0, 0.8)";
+        ctx.fillRect(cx, cy, len, 2 + Math.floor(prand(seed + 4) * 2));
+      }
+    }
+
+    function drawHUD() {
+      const pad = 16, w = 260, h = 28, x = pad, y = pad;
+      const ix = x + 4, iy = y + 4, iw = w - 8, ih = h - 8;
+      const t = clamp(localPlayer.health / localPlayer.maxHealth, 0, 1);
+
+      ctx.fillStyle = "#f5e6d0";
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = "#0a0608";
+      ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+      ctx.fillStyle = "#241820";
+      ctx.fillRect(ix, iy, iw, ih);
+      ctx.fillStyle = t > 0.6 ? "#6fdc8c" : t > 0.3 ? "#ffe566" : "#ff6b6b";
+      ctx.fillRect(ix, iy, Math.floor(iw * t), ih);
+      ctx.strokeStyle = "#3d2830";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+
+      ctx.font = "10px monospace";
+      ctx.fillStyle = "#ffe566";
+      ctx.textAlign = "left";
+      ctx.fillText(`SCORE ${score}`, x, y + h + 18);
+      ctx.fillText(`HP`, ix - 2, iy + ih - 4);
+    }
+
+    function updateLocalPlayer() {
+      if (keys.left) { localPlayer.velX = -localPlayer.speed; localPlayer.facing = -1; }
+      else if (keys.right) { localPlayer.velX = localPlayer.speed; localPlayer.facing = 1; }
+      else localPlayer.velX *= 0.8;
+
+      if (keys.jump && localPlayer.grounded) {
+        localPlayer.velY = localPlayer.jumpPower;
+        localPlayer.grounded = false;
+        keys.jump = false;
+      }
+
+      const prevBottom = getHitbox(localPlayer).bottom;
+
+      localPlayer.velY += gravity;
+      localPlayer.y += localPlayer.velY;
+      resolvePlatformCollision(localPlayer, prevBottom);
+
+      const prevBottom2 = getHitbox(localPlayer).bottom;
+      localPlayer.x += localPlayer.velX;
+      resolvePlatformCollision(localPlayer, prevBottom2);
+
+      if (localPlayer.x < 0) localPlayer.x = 0;
+      if (localPlayer.x + localPlayer.width > world.width) localPlayer.x = world.width - localPlayer.width;
+
+      camera.x = clamp(localPlayer.x + localPlayer.width / 2 - canvas.width / 2, 0, Math.max(0, world.width - canvas.width));
+
+      if (localPlayer.y > world.height) {
+        localPlayer.x = 100; localPlayer.y = 100;
+        localPlayer.velX = localPlayer.velY = 0;
+      }
+
+      coins.forEach(coin => {
+        if (!coin.collected) {
+          const dx = localPlayer.x + 32 - coin.x;
+          const dy = localPlayer.y + 32 - coin.y;
+          if (Math.hypot(dx, dy) < 30) { coin.collected = true; score += 10; }
+        }
+      });
+
+      if (localPlayer.invuln > 0) localPlayer.invuln--;
+
+      // Animation
+      const nextState = localPlayer.grounded ? "walk" : "jump";
+      if (animation.state !== nextState) { animation.state = nextState; animation.frame = 0; animation.timer = 0; }
+      const moving = Math.abs(localPlayer.velX) > 0.2;
+      if (localPlayer.grounded && !moving) { animation.frame = 0; }
+      else {
+        animation.timer++;
+        if (animation.timer >= animation.speed) {
+          animation.frame = (animation.frame + 1) % (localPlayer.grounded ? 2 : 4);
+          animation.timer = 0;
+        }
+      }
+
+      localPlayer.username = settings.username;
+    }
+
+    function resolveEnemyCollision(e) {
+      e.grounded = false;
+      e.velY += gravity;
+      const prevBottom = e.y + e.height;
+      e.y += e.velY;
+
+      for (const platform of platforms) {
+        if (
+          e.x < platform.x + platform.width &&
+          e.x + e.width > platform.x &&
+          e.y < platform.y + platform.height &&
+          e.y + e.height > platform.y
+        ) {
+          const feetMid = e.x + e.width / 2;
+          const onX = feetMid > platform.x + 4 && feetMid < platform.x + platform.width - 4;
+          if (e.velY >= 0 && prevBottom <= platform.y + 12 && onX) {
+            e.y = platform.y - e.height;
+            e.velY = 0;
+            e.grounded = true;
+            break;
+          }
+        }
+      }
+
+      e.x += e.velX;
+    }
+
+    function updateEnemies() {
+      const pcx = localPlayer.x + 32;
+      const pcy = localPlayer.y + 32;
+      enemies.forEach((e, idx) => {
+        const dist = Math.hypot(pcx - (e.x + 18), pcy - (e.y + 18));
+        if (!e.aggro && dist <= enemyConfig.aggroRange) e.aggro = true;
+        if (e.aggro && dist >= enemyConfig.disengageRange) e.aggro = false;
+
+        if (e.aggro) {
+          e.velX = Math.sign(localPlayer.x - e.x || 1) * enemyConfig.speed;
+          e.facing = e.velX < 0 ? -1 : 1;
+        } else {
+          e.wanderTimer--;
+          if (e.wanderTimer <= 0) {
+            e.wanderTimer = 40 + Math.floor(prand(idx) * 120);
+            if (prand(idx + 1) > 0.55) e.wanderDir *= -1;
+          }
+          e.velX = e.wanderDir * enemyConfig.wanderSpeed;
+          e.facing = e.velX < 0 ? -1 : 1;
+        }
+
+        resolveEnemyCollision(e);
+
+        const hb = getHitbox(localPlayer);
+        const eb = { x: e.x, y: e.y, width: e.width, height: e.height };
+        if (
+          hb.x < eb.x + eb.width && hb.x + hb.width > eb.x &&
+          hb.y < eb.y + eb.height && hb.y + hb.height > eb.y &&
+          localPlayer.invuln <= 0
+        ) {
+          localPlayer.health -= enemyConfig.hitDamage;
+          localPlayer.invuln = 60;
+          if (localPlayer.health <= 0) {
+            localPlayer.health = localPlayer.maxHealth;
+            localPlayer.x = 100; localPlayer.y = 100;
+          }
+        }
+      });
+    }
+
+    function drawEnemies() {
+      enemies.forEach(e => {
+        const x = e.x - camera.x, y = e.y - camera.y;
+        ctx.fillStyle = e.aggro ? "#2a0d10" : "#1b0b12";
+        ctx.fillRect(x, y + 6, e.width, e.height - 6);
+        ctx.fillStyle = "rgba(255, 85, 0, 0.9)";
+        ctx.fillRect(x + 10, y + 14, e.width - 20, 10);
+      });
+    }
+
+    function drawCoins() {
+      coins.forEach(coin => {
+        if (!coin.collected) {
+          const x = coin.x - camera.x, y = coin.y - camera.y;
+          ctx.fillStyle = "rgba(255, 190, 60, 0.95)";
+          ctx.fillRect(x - 6, y - 6, 12, 12);
+        }
+      });
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+      updateLocalPlayer();
+      updateEnemies();
+
+      platforms.forEach(drawPlatform);
+      drawCoins();
+      drawEnemies();
+
+      remotePlayers.forEach(rp => {
+        if (performance.now() - (rp.lastUpdate || 0) > 3000) return;
+        drawEntitySprite(rp, false);
+      });
+
+      drawEntitySprite(localPlayer, true);
+      drawHUD();
+
+      syncTimer++;
+      if (socket && syncTimer % 3 === 0) {
+        socket.emit("playerState", {
+          x: localPlayer.x,
+          y: localPlayer.y,
+          velX: localPlayer.velX,
+          facing: localPlayer.facing,
+          grounded: localPlayer.grounded,
+          username: settings.username,
+          anim: { frame: animation.frame, state: animation.state }
+        });
+      }
+
+      rafId = requestAnimationFrame(gameLoop);
+    }
+
+    function startMultiplayerGame() {
+      gameRunning = true;
+      resetLevel();
+      showScreen("game");
+      if (socket) localPlayer.id = socket.id;
+      if (rafId) cancelAnimationFrame(rafId);
+      gameLoop();
+    }
+
+    // ==================== INPUT ====================
+    document.addEventListener("keydown", e => {
+      if (!gameRunning) return;
+      if (e.key === "a" || e.key === "ArrowLeft") keys.left = true;
+      if (e.key === "d" || e.key === "ArrowRight") keys.right = true;
+      if (e.key === "w" || e.key === "ArrowUp" || e.key === " ") keys.jump = true;
+    });
+    document.addEventListener("keyup", e => {
+      if (e.key === "a" || e.key === "ArrowLeft") keys.left = false;
+      if (e.key === "d" || e.key === "ArrowRight") keys.right = false;
+    });
+
+    document.querySelectorAll(".dpad button").forEach(btn => {
+      const key = btn.dataset.key;
+      const down = e => { e.preventDefault(); if (key === "left") keys.left = true; if (key === "right") keys.right = true; if (key === "up") keys.jump = true; };
+      const up = e => { e.preventDefault(); if (key === "left") keys.left = false; if (key === "right") keys.right = false; };
+      btn.addEventListener("pointerdown", down);
+      btn.addEventListener("pointerup", up);
+      btn.addEventListener("pointerleave", up);
+    });
+
+    document.getElementById("btnIngameChat").addEventListener("click", () => {
+      document.getElementById("ingameChatPanel").classList.toggle("open");
+    });
+
+    function sendGameChat() {
+      const input = document.getElementById("ingameChatInput");
+      const text = input.value.trim();
+      if (!text) return;
+      addChatBubble(localPlayer, text);
+      if (socket) socket.emit("gameChat", text);
+      input.value = "";
+      document.getElementById("ingameChatPanel").classList.remove("open");
+    }
+
+    document.getElementById("ingameChatSend").addEventListener("click", sendGameChat);
+    document.getElementById("ingameChatInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") sendGameChat();
+    });
+
+    connectSocket();
+    setVolume(settings.volume);
+    startMenuMusic();
+
+    function updateServerHint() {
+      const hint = document.getElementById("serverHint");
+      if (!hint) return;
+      if (location.protocol === "file:") {
+        hint.textContent = "USE npm start OR NETLIFY";
+        hint.className = "server-hint err";
+        return;
+      }
+      if (socket?.connected) {
+        const srv = getServerUrl() || location.origin;
+        hint.textContent = `ONLINE · ${srv.replace(/^https?:\/\//, "")}`;
+        hint.className = "server-hint ok";
+      } else {
+        const needsServerUrl = /\.netlify\.app$/i.test(location.hostname);
+        hint.textContent = needsServerUrl
+          ? "SET SERVER URL IN SETTINGS"
+          : "CONNECTING...";
+        hint.className = "server-hint err";
+      }
+    }
+
+    document.body.addEventListener("click", () => {
+      initAudio();
+      if (audioCtx?.state === "suspended") audioCtx.resume();
+    }, { once: true });
+  </script>
+</body>
+</html>

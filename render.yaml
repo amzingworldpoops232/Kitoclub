@@ -1,0 +1,15 @@
+# Render Blueprint — deploy at https://dashboard.render.com
+# New → Blueprint → connect repo, or: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: kito-club
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production

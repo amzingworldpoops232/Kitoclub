@@ -1,0 +1,16 @@
+# Netlify — frontend (static). Multiplayer runs on Fly.io (see config.js).
+# Deploy: connect repo in Netlify dashboard or `netlify deploy --prod`
+
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
