@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KITO CLUB
 
 Indie volcanic pixel platformer with PvE rooms and multiplayer lobby.
@@ -65,3 +66,6 @@ See `netlify.toml` / `fly.toml` if you split frontend and backend.
 3. Host presses **START**
 
 PvP shows “pvp mode still in devlopment - LORD KITO” 😭
+=======
+# Kitoclub
+>>>>>>> 8a2e31e00fcbc520247806d970ae65ea8e55fcf1
